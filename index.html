@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AoT Chronicles | Patel Smit</title>
+    <meta name="description" content="A legendary character archive designed and developed by Patel Smit. Explore the world of Attack on Titan.">
+    <meta property="og:title" content="AoT Chronicles | Patel Smit">
+    <meta property="og:description" content="Interactive character archive of the Eldian history.">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:wght@300;400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg: #050505;
+            --text: #ffffff;
+            --accent: #bc1823;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --panel-bg: #0a0a0a;
+            --titan-glow: #ffcc00;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        body { background-color: var(--bg); color: var(--text); overflow-x: hidden; scroll-behavior: smooth; }
+
+        /* --- Navbar --- */
+        nav {
+            position: fixed; top: 0; width: 100%; padding: 15px 50px;
+            display: flex; justify-content: space-between; align-items: center;
+            z-index: 100; backdrop-filter: blur(15px); border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .logo { font-family: 'Bebas Neue'; font-size: 2rem; color: var(--accent); letter-spacing: 2px; cursor: pointer; }
+        .logo:hover { animation: glitch 0.3s infinite; }
+
+        @keyframes glitch {
+            0% { transform: translate(0); }
+            20% { transform: translate(-2px, 2px); text-shadow: 2px 0 #fff; }
+            40% { transform: translate(-2px, -2px); text-shadow: -2px 0 var(--accent); }
+            100% { transform: translate(0); }
+        }
+        
+        .social-links a { color: var(--text); font-size: 1.5rem; margin-left: 25px; transition: 0.3s; text-decoration: none; }
+        .social-links a:hover { color: var(--accent); transform: scale(1.3) translateY(-3px); }
+
+        /* --- Hero --- */
+        .hero {
+            height: 100vh; width: 100%;
+            background: linear-gradient(rgba(0,0,0,0.6), var(--bg)), 
+                        url('https://images.hdqwalls.com/wallpapers/attack-on-titan-5k-ms.jpg') center/cover no-repeat fixed;
+            display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;
+        }
+        .hero h1 { font-family: 'Bebas Neue'; font-size: clamp(3rem, 10vw, 8rem); line-height: 0.8; }
+        .dev-glow { color: var(--accent); text-shadow: 0 0 10px rgba(188, 24, 35, 0.6); font-weight: bold; }
+        .data-tag { background: var(--accent); padding: 8px 25px; font-family: 'Bebas Neue'; font-size: 1.5rem; margin-top: 25px; }
+
+        /* --- Filter Bar --- */
+        .filter-container { padding: 40px 50px 0; text-align: center; }
+        .filter-btn { 
+            background: transparent; border: 1px solid var(--accent); color: white; 
+            padding: 8px 20px; font-family: 'Bebas Neue'; font-size: 1.2rem; 
+            cursor: pointer; margin: 5px; transition: 0.3s;
+        }
+        .filter-btn.active, .filter-btn:hover { background: var(--accent); }
+
+        /* --- Grid --- */
+        .grid-container { padding: 40px 50px 80px; max-width: 1400px; margin: 0 auto; }
+        .char-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 30px; }
+        .char-card { 
+            background: var(--card-bg); border-radius: 8px; overflow: hidden; 
+            cursor: pointer; transition: 0.4s; border: 1px solid rgba(255,255,255,0.1);
+            height: 480px; display: flex; flex-direction: column;
+        }
+        .char-card:hover { transform: translateY(-10px); border-color: var(--accent); box-shadow: 0 15px 40px rgba(188, 24, 35, 0.4); }
+        .char-card img { width: 100%; height: 380px; object-fit: cover; object-position: top; }
+        .char-card-name { padding: 20px; font-family: 'Bebas Neue'; font-size: 1.8rem; text-align: center; }
+
+        /* --- Details Page --- */
+        #char-page { position: fixed; top: 0; left: 100%; width: 100%; height: 100vh; background: var(--panel-bg); z-index: 2000; display: flex; }
+        .page-left { width: 45%; height: 100%; position: relative; background: #000; overflow: hidden; }
+        .page-left img { width: 100%; height: 100%; object-fit: cover; position: relative; z-index: 5; }
+
+        #flash { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--titan-glow); z-index: 3000; opacity: 0; pointer-events: none; }
+
+        .page-right { width: 55%; padding: 60px 80px; display: flex; flex-direction: column; justify-content: center; }
+        .back-btn { position: absolute; top: 40px; right: 40px; background: #333; color: white; border: none; padding: 10px 20px; cursor: pointer; font-family: 'Bebas Neue'; }
+        
+        .transform-btn { 
+            background: var(--titan-glow); color: black; border: none; padding: 15px; 
+            font-family: 'Bebas Neue'; font-size: 1.2rem; cursor: pointer; margin-bottom: 20px;
+            display: none; width: fit-content; transition: 0.3s; box-shadow: 0 0 15px var(--titan-glow);
+        }
+
+        .page-name { font-family: 'Bebas Neue'; font-size: clamp(3rem, 8vw, 5.5rem); color: var(--accent); line-height: 0.9; }
+        .page-desc { font-size: 1.1rem; line-height: 1.7; margin: 25px 0; border-left: 3px solid var(--accent); padding-left: 20px; }
+
+        /* STATS */
+        .stat-group { margin-bottom: 20px; }
+        .stat-header { display: flex; justify-content: space-between; margin-bottom: 8px; }
+        .stat-label { font-size: 0.8rem; letter-spacing: 2px; opacity: 0.6; }
+        .stat-score { font-family: 'Bebas Neue'; font-size: 1.3rem; color: var(--accent); }
+        .bar-bg { background: rgba(255,255,255,0.1); height: 8px; border-radius: 4px; overflow: hidden; }
+        .bar-fill { height: 100%; background: var(--accent); width: 0%; }
+
+        footer { text-align: center; padding: 40px; opacity: 0.6; font-size: 0.8rem; letter-spacing: 2px; }
+
+        @media (max-width: 1000px) { #char-page { flex-direction: column; overflow-y: auto; } .page-left, .page-right { width: 100%; } .page-left { height: 40vh; } }
+    </style>
+</head>
+<body>
+
+    <div id="flash"></div>
+
+    <nav>
+        <div class="logo">AOT / CHRONICLES</div>
+        <div class="social-links" id="nav-socials"></div>
+    </nav>
+
+    <section class="hero">
+        <h1>FREEDOM OR DESTRUCTION</h1>
+        <p>A LEGENDARY ARCHIVE BY <span class="dev-glow">PATEL SMIT</span></p>
+        <div class="data-tag">CHARACTER DATA-FILE // 2026 EDITION</div>
+    </section>
+
+    <div class="filter-container">
+        <button class="filter-btn active" onclick="filterChars('all', this)">ALL</button>
+        <button class="filter-btn" onclick="filterChars('corps', this)">SURVEY CORPS</button>
+        <button class="filter-btn" onclick="filterChars('warrior', this)">WARRIORS</button>
+        <button class="filter-btn" onclick="filterChars('other', this)">OTHERS</button>
+    </div>
+
+    <div class="grid-container">
+        <div class="char-grid" id="main-grid"></div>
+    </div>
+
+    <footer>DESIGNED & DEVELOPED BY <span class="dev-glow">PATEL SMIT</span> © 2026</footer>
+
+    <div id="char-page">
+        <button class="back-btn" onclick="closePage()">BACK TO ARCHIVE</button>
+        <div class="page-left">
+            <img src="" id="p-img">
+        </div>
+        <div class="page-right">
+            <button id="t-btn" class="transform-btn" onclick="triggerTransformation()">TRANFORM TO TITAN</button>
+            <h2 id="p-name" class="page-name"></h2>
+            <p id="p-desc" class="page-desc"></p>
+            <div id="stats-container"></div>
+        </div>
+    </div>
+
+    <script>
+        // Hardcoded social links for Patel Smit
+        document.getElementById('nav-socials').innerHTML = `
+            <a href="https://github.com/smitpatel-coding" target="_blank" title="GitHub"><i class="fab fa-github"></i></a>
+            <a href="https://www.linkedin.com/in/smit-patel01" target="_blank" title="LinkedIn"><i class="fab fa-linkedin"></i></a>
+            <a href="https://x.com/smitpatel_code" target="_blank" title="X (Twitter)"><i class="fa-brands fa-x-twitter"></i></a>
+        `;
+
+        const characters = [
+            { 
+                name: "Eren Yeager", 
+                faction: "corps", 
+                desc: "The boy who sought freedom. Founder of the Rumbling.", 
+                img: "https://i.pinimg.com/originals/ab/9f/a7/ab9fa72ba4a4a04c4f4e2232c37fb050.jpg", 
+                titanImg: "https://vignette.wikia.nocookie.net/shingekinokyojin/images/f/ff/Eren_titan_form.jpg/revision/latest?cb=20170813191606", 
+                titanDesc: "The Attack Titan. A relentless force that has always fought for freedom.", 
+                pwr: 99, spd: 88, int: 85 
+            },
+            { name: "Levi Ackerman", faction: "corps", desc: "Humanity's strongest soldier. Fast, precise, and unmatched.", img: "https://cdn.staticneo.com/w/attackontitan/Leviackerman.jpg", pwr: 96, spd: 100, int: 92 },
+            { name: "Mikasa Ackerman", faction: "corps", desc: "A combat prodigy whose blood makes her a natural elite.", img: "https://images6.alphacoders.com/121/1219984.png", pwr: 94, spd: 97, int: 80 },
+            { 
+                name: "Armin Arlert", 
+                faction: "corps", 
+                desc: "Tactical genius. Inheritor of the Colossal Titan.", 
+                img: "https://vignette.wikia.nocookie.net/animal-jam-clans-1/images/e/e8/Armin_Arlert.png/revision/latest?cb=20170331203535", 
+                titanImg: "https://mangainsider.com/wp-content/uploads/2022/02/Armin-Arlelt-Pure-Titan.png", 
+                titanDesc: "The Colossal Titan. A weapon of mass destruction.", 
+                pwr: 100, spd: 20, int: 100 
+            },
+            { 
+                name: "Reiner Braun", 
+                faction: "warrior", 
+                desc: "The Armored Titan. A soldier torn between two worlds.", 
+                img: "https://vignette.wikia.nocookie.net/shingeki-no-kyojin/images/4/4c/Reiner_Braun_(anime).png/revision/latest?cb=20170419040914&path-prefix=es", 
+                titanImg: "https://static0.gamerantimages.com/wordpress/wp-content/uploads/2023/11/armored-titan-reiner-braun-attack-on-titan-featured.jpg", 
+                titanDesc: "The Armored Titan. Clad in plates of hardened skin.", 
+                pwr: 92, spd: 65, int: 75 
+            },
+            { 
+                name: "Annie Leonhart", 
+                faction: "warrior", 
+                desc: "The Female Titan. A master of lethal martial arts.", 
+                img: "https://ami.animecharactersdatabase.com/uploads/chars/16391-347842955.jpg", 
+                titanImg: "https://a.storyblok.com/f/178900/1504x846/cdcb5d80ce/bc92007e3c28c768e607ac306884e9cd1677404382_main.jpg/m/filters:quality(95)format(webp)", 
+                titanDesc: "The Female Titan. High mobility and localized hardening.", 
+                pwr: 89, spd: 94, int: 87 
+            },
+            { 
+                name: "Zeke Yeager", 
+                faction: "warrior", 
+                desc: "The Beast Titan with a long-range throwing lethality.", 
+                img: "https://criticalhits.com.br/wp-content/uploads/2025/07/Zeke-Yeager.jpg", 
+                titanImg: "https://picfiles.alphacoders.com/231/231244.png", 
+                titanDesc: "The Beast Titan. A specialized form with powerful projectile attacks.", 
+                pwr: 90, spd: 60, int: 96 
+            },
+            { name: "Erwin Smith", faction: "corps", desc: "13th Commander. A legendary leader who gave his heart.", img: "https://static1.cbrimages.com/wordpress/wp-content/uploads/2019/09/Attack-On-Titan-10-Things-You-Didnt-Know-About-Erwin-Smith-featured-image.jpg", pwr: 85, spd: 78, int: 100 },
+            { name: "Hange Zoe", faction: "corps", desc: "A visionary researcher who became Commander.", img: "https://images6.alphacoders.com/138/1383591.jpg", pwr: 78, spd: 88, int: 99 },
+            { name: "Sasha Braus", faction: "corps", desc: "An expert marksman with survival instincts.", img: "https://wallpapercave.com/wp/wp4379356.jpg", pwr: 72, spd: 90, int: 68 },
+            { name: "Jean Kirschtein", faction: "corps", desc: "A leader who values reality and human life.", img: "https://i.pinimg.com/originals/87/c3/b4/87c3b449f30743f34ca5af9337d1890e.jpg", pwr: 84, spd: 88, int: 88 },
+            { name: "Historia Reiss", faction: "other", desc: "The Queen of the Walls.", img: "https://vignette.wikia.nocookie.net/rekingdom/images/c/c3/Historia2.png/revision/latest?cb=20170702130751", pwr: 60, spd: 80, int: 84 },
+            { 
+                name: "Pieck Finger", 
+                faction: "warrior", 
+                desc: "The Cart Titan. Known for her incredible endurance.", 
+                img: "https://picfiles.alphacoders.com/425/thumb-1920-425264.jpg", 
+                titanImg: "https://i.pinimg.com/originals/7b/18/80/7b188018e4ec047136ad0a5c2970bee3.jpg", 
+                titanDesc: "The Cart Titan. Exceptional endurance and transport utility.", 
+                pwr: 60, spd: 70, int: 98 
+            },
+            { 
+                name: "Falco Grice", 
+                faction: "warrior", 
+                desc: "The Winged Jaw. A soul who flew above the war.", 
+                img: "https://i.pinimg.com/736x/b2/09/cb/b209cbcaef8e8f0b8c09609b677b282e.jpg", 
+                titanImg: "https://static0.dualshockersimages.com/wordpress/wp-content/uploads/2022/09/Jaw-Titan.jpg", 
+                titanDesc: "The Jaw Titan. Manifested as a bird-like form with flight capabilities.", 
+                pwr: 88, spd: 98, int: 80 
+            },
+            { name: "Gabi Braun", faction: "warrior", desc: "A determined warrior candidate.", img: "https://wallpapercave.com/wp/wp8471445.jpg", pwr: 75, spd: 82, int: 82 },
+            { name: "Kenny Ackerman", faction: "other", desc: "The Ripper. A legend of the underground.", img: "https://wallpapercave.com/wp/wp8516743.png", pwr: 92, spd: 96, int: 86 },
+            { 
+                name: "Bertholdt Hoover", 
+                faction: "warrior", 
+                desc: "The original Colossal Titan.", 
+                img: "https://wallpapers.com/images/hd/bertholdt-hoover-1920-x-1080-wallpaper-dyklwb5wj8sd4tqd.jpg", 
+                titanImg: "https://staticg.sportskeeda.com/editor/2021/10/a6a5e-16352433462694-1920.jpg", 
+                titanDesc: "The Colossal Titan. A symbol of destruction standing 60m tall.", 
+                pwr: 100, spd: 25, int: 80 
+            },
+            { 
+                name: "Porco Galliard", 
+                faction: "warrior", 
+                desc: "The aggressive Jaw Titan.", 
+                img: "https://i.pinimg.com/originals/92/38/4c/92384cfaeda60581ddebdfd85c4492f5.jpg", 
+                titanImg: "https://i.pinimg.com/originals/91/d2/0f/91d20f2cf01597ec121029fac6282de3.jpg", 
+                titanDesc: "The Jaw Titan. Hardened jaws and claws.", 
+                pwr: 88, spd: 98, int: 76 
+            },
+            { 
+                name: "Ymir", 
+                faction: "other", 
+                desc: "A survivor who lived for herself.", 
+                img: "https://vignette.wikia.nocookie.net/shingeki-no-kyojin/images/e/eb/Ymir_(Anime).png/revision/latest?cb=20170508052131&path-prefix=es", 
+                titanImg: "https://mangainsider.com/wp-content/uploads/2022/04/Ymir-Jaw-Titan-form-wiki.webp", 
+                titanDesc: "The Jaw Titan. Small and extremely agile.", 
+                pwr: 80, spd: 92, int: 74 
+            },
+            { name: "Floch Forster", faction: "corps", desc: "The Yeagerist leader.", img: "https://static1.cbrimages.com/wordpress/wp-content/uploads/2022/11/Floch-Forster-as-seen-in-Attack-on-Titan-the-Final-Season.jpg", pwr: 82, spd: 84, int: 86 }
+        ];
+
+        let currentActiveChar = null;
+        let isTitan = false;
+
+        function renderGrid(data) {
+            const grid = document.getElementById('main-grid');
+            grid.innerHTML = '';
+            data.forEach((char) => {
+                const card = document.createElement('div');
+                card.className = 'char-card';
+                card.innerHTML = `<img src="${char.img}" alt="${char.name}"><div class="char-card-name">${char.name}</div>`;
+                card.onclick = () => openPage(char);
+                grid.appendChild(card);
+            });
+        }
+
+        function openPage(char) {
+            currentActiveChar = char;
+            isTitan = false;
+            document.getElementById('p-img').src = char.img;
+            document.getElementById('p-name').innerText = char.name;
+            document.getElementById('p-desc').innerText = char.desc;
+            const tBtn = document.getElementById('t-btn');
+            tBtn.style.display = char.titanImg ? 'block' : 'none';
+            tBtn.innerText = "TRANSFORM TO TITAN";
+            anime({ targets: '#char-page', left: '0%', duration: 800, easing: 'easeInOutQuint' });
+            renderStats(char);
+        }
+
+        function triggerTransformation() {
+            anime({ 
+                targets: '#flash', 
+                opacity: [0, 1, 0], 
+                duration: 600, 
+                easing: 'linear',
+                complete: () => {
+                    isTitan = !isTitan;
+                    const char = currentActiveChar;
+                    document.getElementById('p-img').src = isTitan ? char.titanImg : char.img;
+                    document.getElementById('p-desc').innerText = isTitan ? char.titanDesc : char.desc;
+                    document.getElementById('t-btn').innerText = isTitan ? "REVERT TO HUMAN" : "TRANSFORM TO TITAN";
+                }
+            });
+        }
+
+        function renderStats(char) {
+            const stats = [{label:'COMBAT POWER', key:'pwr'}, {label:'AGILITY', key:'spd'}, {label:'INTELLIGENCE', key:'int'}];
+            const container = document.getElementById('stats-container');
+            container.innerHTML = stats.map(s => `
+                <div class="stat-group">
+                    <div class="stat-header"><span class="stat-label">${s.label}</span><span id="sc-${s.key}" class="stat-score">0/100</span></div>
+                    <div class="bar-bg"><div id="br-${s.key}" class="bar-fill"></div></div>
+                </div>
+            `).join('');
+            stats.forEach(s => {
+                anime({ targets: `#br-${s.key}`, width: char[s.key] + '%', duration: 1500, delay: 400 });
+                let obj = { n: 0 };
+                anime({ targets: obj, n: char[s.key], round: 1, duration: 1500, delay: 400, update: () => { document.getElementById(`sc-${s.key}`).innerText = obj.n + '/100'; }});
+            });
+        }
+
+        function closePage() { anime({ targets: '#char-page', left: '100%', duration: 600, easing: 'easeInOutQuint' }); }
+
+        function filterChars(faction, btn) {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            renderGrid(faction === 'all' ? characters : characters.filter(c => c.faction === faction));
+        }
+
+        renderGrid(characters);
+    </script>
+</body>
+</html>
