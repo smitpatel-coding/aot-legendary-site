@@ -14,3 +14,11 @@ This is a high-performance, interactive character archive of the Eldian history.
 * HTML5 / CSS3
 * JavaScript (ES6+)
 * Anime.js Library
+
+## 📁 Character Archive
+| Character | Titan Form | Ability |
+| :--- | :--- | :--- |
+| **Eren Yeager** | Attack Titan | Founding Titan Power |
+| **Armin Arlert** | Colossal Titan | Explosive Transformation |
+| **Mikasa Ackerman** | Human | God-like Combat Instincts |
+| **Levi Ackerman** | Human | Humanity's Strongest Soldier |
